@@ -1,37 +1,23 @@
 '''
-Highlights unicode nbsp.
+Highlights unicode nbsp. and trailing stuff
 based on: https://bitbucket.org/theblacklion/sublime_plugins/src/3ea0c9e35d2f/highlight_trailing_spaces.py
-
-You might want to override the following parameters within your file settings:
-* highlight_trailing_spaces_max_file_size
-  Restrict this to a sane size in order not to DDOS your editor.
-* highlight_trailing_spaces_color_name
-  Change this to a valid scope name, which has to be defined within your theme.
-
-@author: Oktay Acikalin <ok@ryotic.de>
-
-@license: MIT (http://www.opensource.org/licenses/mit-license.php)
-
-@since: 2011-02-11
 '''
 
 import sublime
 import sublime_plugin
 
 DEFAULT_MAX_FILE_SIZE = 1048576
-DEFAULT_COLOR_NAME = 'comment'
+DEFAULT_COLOR_NAME = 'invalid'
 
 def view_is_too_big(view, max_size_setting, default_max_size=None):
     settings = view.settings()
     max_size = settings.get(max_size_setting, default_max_size)
-    # print max_size, type(max_size)
     if max_size not in (None, False):
         max_size = long(max_size)
         cur_size = view.size()
         if cur_size > max_size:
             return True
     return False
-
 
 def view_is_widget(view):
     settings = view.settings()
@@ -45,6 +31,7 @@ class DeferedViewListener(sublime_plugin.EventListener):
         self.max_size_setting = ''
         self.default_max_file_size = None
         self.delay = 500
+        print "Hej"
 
     def is_enabled(self, view):
         return True
@@ -82,40 +69,42 @@ class DeferedViewListener(sublime_plugin.EventListener):
             func()
 
     def on_modified(self, view):
-        '''
-        Event callback to react on modification of the document.
-
-        @type  view: sublime.View
-        @param view: View to work with.
-
-        @return: None
-        '''
         self.defered_update(view)
 
     def on_load(self, view):
-        '''
-        Event callback to react on loading of the document.
-
-        @type  view: sublime.View
-        @param view: View to work with.
-
-        @return: None
-        '''
         self.defered_update(view)
 
     def on_activated(self, view):
-        '''
-        Event callback to react on activation of the document.
-
-        @type  view: sublime.View
-        @param view: View to work with.
-
-        @return: None
-        '''
         if view.id() not in self.seen_views:
             self.defered_update(view)
 
 class HighlightUnicodeListener(DeferedViewListener):
+
+    # list originally from http://stackoverflow.com/a/6609998/96664
+    chars = {
+        u'\x82' : ',',        # High code comma
+        u'\x84' : ',,',       # High code double comma
+        u'\x85' : '...',      # Tripple dot
+        u'\x88' : '^',        # High carat
+        u'\x91' : ' \x27',     # Forward single quote
+        u'\x92' : '\x27',     # Reverse single quote
+        u'\x93' : '\x22',     # Forward double quote
+        u'\x94' : '\x22',     # Reverse double quote
+        u'\x95' : ' ',
+        u'\x96' : '-',        # High hyphen
+        u'\x97' : '--',       # Double hyphen
+        u'\x99' : ' ',
+        u'\xa0' : ' ',
+        u'\xa6' : '|',        # Split vertical bar
+        u'\xab' : '<<',       # Double less than
+        u'\xbb' : '>>',       # Double greater than
+        u'\xbc' : '1/4',      # one quarter
+        u'\xbd' : '1/2',      # one half
+        u'\xbe' : '3/4',      # three quarters
+        u'\xbf' : '\x27',     # c-single quote
+        u'\xa8' : '',         # modifier - under curve
+        u'\xb1' : ''          # modifier - under line
+    }
 
     def __init__(self):
         super(HighlightUnicodeListener, self).__init__()
@@ -129,9 +118,13 @@ class HighlightUnicodeListener(DeferedViewListener):
     def update(self, view):
         settings = view.settings()
         color_name = settings.get('highlight_unicode_color_name', DEFAULT_COLOR_NAME)
-        trails = view.find_all('[ \t]+$')
         regions = []
-        for trail in trails:
-            regions.append(trail)
+        for x in view.find_all(u'[' + ''.join(self.chars.keys()) + u']+'):
+            regions.append(x)
+        for x in view.find_all(u'[ \t]+$'):
+            regions.append(x)
+        
+        #for x in view.find_all(u'^$'):
+        #    regions.append(x)
         view.add_regions('HighlightUnicodeJunk', regions, color_name,
                          sublime.DRAW_EMPTY_AS_OVERWRITE)
