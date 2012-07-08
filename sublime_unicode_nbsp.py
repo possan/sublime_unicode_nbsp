@@ -1,6 +1,8 @@
 '''
 Highlights unicode nbsp. and trailing stuff
-based on: https://bitbucket.org/theblacklion/sublime_plugins/src/3ea0c9e35d2f/highlight_trailing_spaces.py
+based on:
+https://bitbucket.org/theblacklion/sublime_plugins/src/3ea0c9e35d2f/highlight_trailing_spaces.py
+http://stackoverflow.com/a/6609998/96664
 '''
 
 import sublime
@@ -31,7 +33,6 @@ class DeferedViewListener(sublime_plugin.EventListener):
         self.max_size_setting = ''
         self.default_max_file_size = None
         self.delay = 500
-        print "Hej"
 
     def is_enabled(self, view):
         return True
@@ -80,7 +81,6 @@ class DeferedViewListener(sublime_plugin.EventListener):
 
 class HighlightUnicodeListener(DeferedViewListener):
 
-    # list originally from http://stackoverflow.com/a/6609998/96664
     chars = {
         u'\x82' : ',',        # High code comma
         u'\x84' : ',,',       # High code double comma
@@ -123,7 +123,7 @@ class HighlightUnicodeListener(DeferedViewListener):
             regions.append(x)
         for x in view.find_all(u'[ \t]+$'):
             regions.append(x)
-        
+
         #for x in view.find_all(u'^$'):
         #    regions.append(x)
         view.add_regions('HighlightUnicodeJunk', regions, color_name,
