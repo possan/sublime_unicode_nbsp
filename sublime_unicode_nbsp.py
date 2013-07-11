@@ -15,7 +15,7 @@ def view_is_too_big(view, max_size_setting, default_max_size=None):
     settings = view.settings()
     max_size = settings.get(max_size_setting, default_max_size)
     if max_size not in (None, False):
-        max_size = long(max_size)
+        max_size = int(max_size)
         cur_size = view.size()
         if cur_size > max_size:
             return True
@@ -127,4 +127,4 @@ class HighlightUnicodeListener(DeferedViewListener):
         #for x in view.find_all(u'^$'):
         #    regions.append(x)
         view.add_regions('HighlightUnicodeJunk', regions, color_name,
-                         sublime.DRAW_EMPTY_AS_OVERWRITE)
+                         flags=sublime.DRAW_EMPTY_AS_OVERWRITE)
