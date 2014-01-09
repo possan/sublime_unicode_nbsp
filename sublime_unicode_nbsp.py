@@ -126,5 +126,6 @@ class HighlightUnicodeListener(DeferedViewListener):
 
         #for x in view.find_all(u'^$'):
         #    regions.append(x)
-        view.add_regions('HighlightUnicodeJunk', regions, color_name,
-                         flags=sublime.DRAW_EMPTY_AS_OVERWRITE)
+        icon = ''
+        flags = sublime.DRAW_EMPTY_AS_OVERWRITE
+        view.add_regions('HighlightUnicodeJunk', regions, color_name, icon, flags)
